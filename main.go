@@ -80,6 +80,7 @@ func (s ParcelService) NextStatus(number int) error {
 	case ParcelStatusSent:
 		nextStatus = ParcelStatusDelivered
 	case ParcelStatusDelivered:
+		// дальше уже не двигаем
 		return nil
 	}
 
@@ -98,8 +99,15 @@ func (s ParcelService) Delete(number int) error {
 
 func main() {
 	// настройте подключение к БД
+	db, err := sql.Open("sqlite", "tracker.db")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer db.Close()
 
-	store := // создайте объект ParcelStore функцией NewParcelStore
+	// создайте объект ParcelStore функцией NewParcelStore
+	store := NewParcelStore(db)
 	service := NewParcelService(store)
 
 	// регистрация посылки
@@ -137,7 +145,7 @@ func main() {
 	err = service.Delete(p.Number)
 	if err != nil {
 		fmt.Println(err)
-		return
+		// по заданию тут должна быть ошибка, поэтому просто продолжаем
 	}
 
 	// вывод посылок клиента
