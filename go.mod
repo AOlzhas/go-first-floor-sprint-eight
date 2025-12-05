@@ -1,6 +1,6 @@
 module github.com/Yandex-Practicum/go-db-sql-final
 
-go 1.24.0
+go 1.22
 
 require (
 	github.com/stretchr/testify v1.11.1
