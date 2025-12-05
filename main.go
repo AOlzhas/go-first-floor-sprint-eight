@@ -80,6 +80,7 @@ func (s ParcelService) NextStatus(number int) error {
 	case ParcelStatusSent:
 		nextStatus = ParcelStatusDelivered
 	case ParcelStatusDelivered:
+		// дальше уже не двигаем
 		return nil
 	}
 
@@ -98,8 +99,31 @@ func (s ParcelService) Delete(number int) error {
 
 func main() {
 	// настройте подключение к БД
+	db, err := sql.Open("sqlite", "tracker.db")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer db.Close()
 
-	store := // создайте объект ParcelStore функцией NewParcelStore
+	// В боевом задании таблица обычно создаётся миграциями,
+	// но на всякий случай можно гарантировать схему:
+	_, err = db.Exec(`
+		CREATE TABLE IF NOT EXISTS parcel (
+			number     INTEGER PRIMARY KEY AUTOINCREMENT,
+			client     INTEGER NOT NULL,
+			status     TEXT    NOT NULL,
+			address    TEXT    NOT NULL,
+			created_at TEXT    NOT NULL
+		);
+	`)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	// создайте объект ParcelStore функцией NewParcelStore
+	store := NewParcelStore(db)
 	service := NewParcelService(store)
 
 	// регистрация посылки
@@ -137,7 +161,7 @@ func main() {
 	err = service.Delete(p.Number)
 	if err != nil {
 		fmt.Println(err)
-		return
+		// это ожидаемая ошибка по бизнес-логике, просто продолжаем
 	}
 
 	// вывод посылок клиента
